@@ -4,6 +4,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <math.h>
 
 #include "player.h"
 
@@ -11,6 +12,9 @@
 #define HEIGHT 480
 
 #define PIXELS_PER_METER 100.0
+
+// sqrt(0.5^2 + 0.5^2)
+#define PLAYER_HYPOT 0.70710678118
 
 typedef struct {
 	SDL_Renderer* renderer;
@@ -22,6 +26,10 @@ typedef struct {
 	int x;
 	int y;
 } Coord;
+
+double DegreesToRadians(double deg) {
+	return (deg / 180) * PI;
+}
 
 SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[]) {
 	SDL_SetAppMetadata("A 3D Game", "0.1", "com.wowmuchdoge.funnygame");
@@ -74,22 +82,24 @@ SDL_AppResult SDL_AppIterate(void *appState) {
 	const bool *keystate;
 
 	keystate = SDL_GetKeyboardState(NULL);
-	double xspeed = 0, yspeed = 0;
+	double xspeed = 0, yspeed = 0, rotspeed = 0;
 
 	if (keystate[SDL_SCANCODE_W]) yspeed -= 0.5;
 	if (keystate[SDL_SCANCODE_S]) yspeed += 0.5;
 	if (keystate[SDL_SCANCODE_A]) xspeed -= 0.5;
 	if (keystate[SDL_SCANCODE_D]) xspeed += 0.5;
+	if (keystate[SDL_SCANCODE_1]) rotspeed += 90.0;
+	if (keystate[SDL_SCANCODE_2]) rotspeed -= 90.0;
 
-	MovePlayer(&as->player, (Speeds){.vx = xspeed, .vy = yspeed});
+	MovePlayer(&as->player, (Speeds){.vx = xspeed, .vy = yspeed, .omega = rotspeed});
 
 	IteratePlayer(&as->player);
 
 	Coord playerCoords[] = {
-		PositionToPixel(as->player.x - 0.5, as->player.y - 0.5),
-		PositionToPixel(as->player.x + 0.5, as->player.y - 0.5),
-		PositionToPixel(as->player.x + 0.5, as->player.y + 0.5),
-		PositionToPixel(as->player.x - 0.5, as->player.y + 0.5)
+		PositionToPixel(as->player.x + PLAYER_HYPOT * cos(DegreesToRadians(as->player.rot - 45)), as->player.y + PLAYER_HYPOT * sin(DegreesToRadians(as->player.rot - 45))),
+		PositionToPixel(as->player.x + PLAYER_HYPOT * cos(DegreesToRadians(as->player.rot + 45)), as->player.y + PLAYER_HYPOT * sin(DegreesToRadians(as->player.rot + 45))),
+		PositionToPixel(as->player.x + PLAYER_HYPOT * cos(DegreesToRadians(as->player.rot + 135)), as->player.y + PLAYER_HYPOT * sin(DegreesToRadians(as->player.rot + 135))),
+		PositionToPixel(as->player.x + PLAYER_HYPOT * cos(DegreesToRadians(as->player.rot + 225)), as->player.y + PLAYER_HYPOT * sin(DegreesToRadians(as->player.rot + 225)))
 	};
 
 	// printf("%d, %d\n", PositionToPixel(as->player.x, as->player.y).x, PositionToPixel(as->player.x, as->player.y).y);

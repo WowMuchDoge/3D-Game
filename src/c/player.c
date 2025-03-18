@@ -2,6 +2,7 @@
 
 #include <time.h>
 #include <stdio.h>
+#include <math.h>
 
 #define BILLION 1000000000L
 
@@ -28,15 +29,18 @@ void IteratePlayer(Player* player) {
 
 	player->_curTime = curTime;
 
-	player->x += deltaTime * player->_curSpeed.vx;
-	player->y += deltaTime * player->_curSpeed.vy;
+	double xDistance = deltaTime * player->_curSpeed.vx * cos((player->rot / 180) * PI);
+	double yDistance = deltaTime * player->_curSpeed.vy * sin((player->rot / 180) * PI);
+
+	player->x += xDistance;
+	player->y += yDistance;
 	player->rot += deltaTime * player->_curSpeed.omega;
 
 	tick++;
 
-	if (tick % 1000 == 0) {
-		printf("x: %f, y: %f, rot: %f\n", player->x, player->y, player->rot);
-	}
+	// if (tick % 1000 == 0) {
+	// 	printf("x: %f, y: %f, rot: %f\n", player->x, player->y, player->rot);
+	// }
 }
 
 void MovePlayer(Player* player, Speeds speed) {

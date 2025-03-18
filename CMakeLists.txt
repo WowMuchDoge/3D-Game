@@ -13,4 +13,4 @@ add_executable(out
 		src/c/main.c
 		src/c/player.c)
 
-target_link_libraries(out PRIVATE SDL3::SDL3)
+target_link_libraries(out PRIVATE SDL3::SDL3 m)

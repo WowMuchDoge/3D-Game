@@ -3,6 +3,8 @@
 
 #include <sys/time.h>
 
+#define PI 3.14159265359
+
 // Units arbitrarily in m/s for linear coords and degrees/s
 // for rotational
 typedef struct {
