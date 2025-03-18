@@ -8,6 +8,18 @@
 
 int tick = 0;
 
+Speeds DecomposeSpeeds(Speeds initialSpeeds, double rot) {
+	double vx = 0.0;
+	double vy = 0.0;
+
+	vy += initialSpeeds.vx * sin((rot / 180) * PI);
+	vx += initialSpeeds.vx * cos((rot / 180) * PI);
+	vy += initialSpeeds.vy * sin((rot / 180) * PI);
+	vx += initialSpeeds.vy * cos((rot / 180) * PI);
+
+	return (Speeds){.vx = vx, .vy = vy, .omega = initialSpeeds.omega};
+}
+
 void InitPlayer(Player* player) {
 	player->x = 0;
 	player->y = 0;
@@ -29,11 +41,10 @@ void IteratePlayer(Player* player) {
 
 	player->_curTime = curTime;
 
-	double xDistance = deltaTime * player->_curSpeed.vx * cos((player->rot / 180) * PI);
-	double yDistance = deltaTime * player->_curSpeed.vy * sin((player->rot / 180) * PI);
+	Speeds decomposedSpeeds = DecomposeSpeeds(player->_curSpeed, player->rot);
 
-	player->x += xDistance;
-	player->y += yDistance;
+	player->x += deltaTime * decomposedSpeeds.vx;
+	player->y += deltaTime * decomposedSpeeds.vy;
 	player->rot += deltaTime * player->_curSpeed.omega;
 
 	tick++;

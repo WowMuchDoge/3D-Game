@@ -86,12 +86,10 @@ SDL_AppResult SDL_AppIterate(void *appState) {
 
 	if (keystate[SDL_SCANCODE_W]) yspeed -= 0.5;
 	if (keystate[SDL_SCANCODE_S]) yspeed += 0.5;
-	if (keystate[SDL_SCANCODE_A]) xspeed -= 0.5;
-	if (keystate[SDL_SCANCODE_D]) xspeed += 0.5;
-	if (keystate[SDL_SCANCODE_1]) rotspeed += 90.0;
-	if (keystate[SDL_SCANCODE_2]) rotspeed -= 90.0;
+	if (keystate[SDL_SCANCODE_A]) rotspeed -= 90.0;
+	if (keystate[SDL_SCANCODE_D]) rotspeed += 90.0;
 
-	MovePlayer(&as->player, (Speeds){.vx = xspeed, .vy = yspeed, .omega = rotspeed});
+	MovePlayer(&as->player, (Speeds){.vx = 0, .vy = yspeed, .omega = rotspeed});
 
 	IteratePlayer(&as->player);
 
