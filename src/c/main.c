@@ -7,11 +7,13 @@
 #include <math.h>
 
 #include "player.h"
+#include "polygon.h"
 
 #define WIDTH 640
 #define HEIGHT 480
 
 #define PIXELS_PER_METER 100.0
+#define FOV 90
 
 // sqrt(0.5^2 + 0.5^2)
 #define PLAYER_HYPOT 0.70710678118
@@ -20,6 +22,7 @@ typedef struct {
 	SDL_Renderer* renderer;
 	SDL_Window* window;
 	Player player;
+	World world;
 } AppState;
 
 typedef struct {
@@ -36,7 +39,15 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[]) {
 
 	AppState* appState = (AppState*)malloc(sizeof(AppState));
 
-	InitPlayer(&appState->player);
+	appState->player = InitPlayer(FOV, WIDTH, HEIGHT);
+
+	Point3d point = (Point3d){1.0, 3.0, 2.0};
+	Point3d playerPoint = ToPlayerCoordinatePoint3d(point, appState->player);
+	Point2d projectedPoint = ProjectPointTo2d(playerPoint, appState->player);
+
+	// printf("World X: %f, World Y: %f, World Z: %f\n", point.x, point.y, point.z); 
+	// printf("Player X: %f, Player Y: %f, Player Z: %f\n", playerPoint.x, playerPoint.y, playerPoint.z); 
+	// printf("Projected X: %f, Projected Y: %f\n", projectedPoint.x, projectedPoint.y);
 
 	if (!SDL_Init(SDL_INIT_VIDEO)) {
 		SDL_Log("Error: Could not initialize SDL: %s", SDL_GetError());
@@ -93,23 +104,68 @@ SDL_AppResult SDL_AppIterate(void *appState) {
 
 	IteratePlayer(&as->player);
 
-	Coord playerCoords[] = {
-		PositionToPixel(as->player.x + PLAYER_HYPOT * cos(DegreesToRadians(as->player.rot - 45)), as->player.y + PLAYER_HYPOT * sin(DegreesToRadians(as->player.rot - 45))),
-		PositionToPixel(as->player.x + PLAYER_HYPOT * cos(DegreesToRadians(as->player.rot + 45)), as->player.y + PLAYER_HYPOT * sin(DegreesToRadians(as->player.rot + 45))),
-		PositionToPixel(as->player.x + PLAYER_HYPOT * cos(DegreesToRadians(as->player.rot + 135)), as->player.y + PLAYER_HYPOT * sin(DegreesToRadians(as->player.rot + 135))),
-		PositionToPixel(as->player.x + PLAYER_HYPOT * cos(DegreesToRadians(as->player.rot + 225)), as->player.y + PLAYER_HYPOT * sin(DegreesToRadians(as->player.rot + 225)))
-	};
+	// Polygon3d playerPoly = ToPlayerCoordinatePolygon3d(as->world.worldPolygons[0], as->player);
+	// Polygon2d projectedPoly = ProjectPolygonTo2d(playerPoly, as->player);
+	//
+	// Point2d p1 = projectedPoly.vertices[0];
+	// Point2d p2 = projectedPoly.vertices[1];
+	Point3d p1 = (Point3d){1.0, 3.0, 2.0};
+	Point3d playerPoint1 = ToPlayerCoordinatePoint3d(p1, as->player);
+	Point2d projectedPoint1 = ProjectPointTo2d(playerPoint1, as->player);
+
+	Point3d p2 = (Point3d){2.0, 3.0, 2.0};
+	Point3d playerPoint2 = ToPlayerCoordinatePoint3d(p2, as->player);
+	Point2d projectedPoint2 = ProjectPointTo2d(playerPoint2, as->player);
+
+	Point3d p3 = (Point3d){2.0, 3.0, 1.0};
+	Point3d playerPoint3 = ToPlayerCoordinatePoint3d(p3, as->player);
+	Point2d projectedPoint3 = ProjectPointTo2d(playerPoint3, as->player);
+
+	Point3d p4 = (Point3d){1.0, 3.0, 1.0};
+	Point3d playerPoint4 = ToPlayerCoordinatePoint3d(p4, as->player);
+	Point2d projectedPoint4 = ProjectPointTo2d(playerPoint4, as->player);
+
+	SDL_FRect rect1 = {(int)((WIDTH / 2) + projectedPoint1.x * PIXELS_PER_METER), (int)((HEIGHT / 2) + projectedPoint1.y * PIXELS_PER_METER), 50 / playerPoint1.y, 50 / playerPoint1.y};
+	SDL_FRect rect2 = {(int)((WIDTH / 2) + projectedPoint2.x * PIXELS_PER_METER), (int)((HEIGHT / 2) + projectedPoint2.y * PIXELS_PER_METER), 50 / playerPoint2.y, 50 / playerPoint2.y};
+	SDL_FRect rect3 = {(int)((WIDTH / 2) + projectedPoint3.x * PIXELS_PER_METER), (int)((HEIGHT / 2) + projectedPoint3.y * PIXELS_PER_METER), 50 / playerPoint3.y, 50 / playerPoint3.y};
+	SDL_FRect rect4 = {(int)((WIDTH / 2) + projectedPoint4.x * PIXELS_PER_METER), (int)((HEIGHT / 2) + projectedPoint4.y * PIXELS_PER_METER), 50 / playerPoint4.y, 50 / playerPoint4.y};
+
+	SDL_SetRenderDrawColor(as->renderer, 30, 70, 127, 255);	
+	SDL_RenderLine(as->renderer, rect1.x, rect1.y, rect2.x, rect2.y);
+	SDL_RenderLine(as->renderer, rect2.x, rect2.y, rect3.x, rect3.y);
+	SDL_RenderLine(as->renderer, rect3.x, rect3.y, rect4.x, rect4.y);
+	SDL_RenderLine(as->renderer, rect4.x, rect4.y, rect1.x, rect1.y);
+	SDL_RenderPresent(as->renderer);
+	SDL_SetRenderDrawColor(as->renderer, 0, 0, 0, 255);
+	SDL_RenderClear(as->renderer);
+
+	//
+	// SDL_FRect r1 = {(int)(p1.x * PIXELS_PER_METER), (int)(p1.y * PIXELS_PER_METER), 5.0, 5.0};
+	// SDL_FRect r2 = {(int)(p2.x * PIXELS_PER_METER), (int)(p2.y * PIXELS_PER_METER), 5.0, 5.0};
+	//
+	// printf("X1 %f, X2 %f\n", p1.x, p1.y);
+	//
+
+	//
+	// Coord playerCoords[] = {
+	// 	PositionToPixel(as->player.x + PLAYER_HYPOT * cos(DegreesToRadians(as->player.rot - 45)), as->player.y + PLAYER_HYPOT * sin(DegreesToRadians(as->player.rot - 45))),
+	// 	PositionToPixel(as->player.x + PLAYER_HYPOT * cos(DegreesToRadians(as->player.rot + 45)), as->player.y + PLAYER_HYPOT * sin(DegreesToRadians(as->player.rot + 45))),
+	// 	PositionToPixel(as->player.x + PLAYER_HYPOT * cos(DegreesToRadians(as->player.rot + 135)), as->player.y + PLAYER_HYPOT * sin(DegreesToRadians(as->player.rot + 135))),
+	// 	PositionToPixel(as->player.x + PLAYER_HYPOT * cos(DegreesToRadians(as->player.rot + 225)), as->player.y + PLAYER_HYPOT * sin(DegreesToRadians(as->player.rot + 225)))
+	// };
 
 	// printf("%d, %d\n", PositionToPixel(as->player.x, as->player.y).x, PositionToPixel(as->player.x, as->player.y).y);
 
-	SDL_SetRenderDrawColor(as->renderer, 0, 0, 0, 255);
-	DrawPolygon(as, playerCoords, 4);
-	SDL_RenderPresent(as->renderer);
-	SDL_RenderClear(as->renderer);
+	// SDL_SetRenderDrawColor(as->renderer, 0, 0, 0, 255);
+	// DrawPolygon(as, playerCoords, 4);
+	// SDL_RenderPresent(as->renderer);
+	// SDL_RenderClear(as->renderer);
 
 	return SDL_APP_CONTINUE;
 }
 
+// SDL handles freeing all the crap for us
 void SDL_AppQuit(void *appState, SDL_AppResult result) {
-
+	FreeWorld(((AppState*)appState)->world);
+	free(appState);
 }

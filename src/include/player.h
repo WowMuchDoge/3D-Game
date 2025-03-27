@@ -5,6 +5,9 @@
 
 #define PI 3.14159265359
 
+#define PLAYER_CAMERA_HEIGHT 2
+#define PLAYER_METERS_PER_PIXEL 0.01
+
 // Units arbitrarily in m/s for linear coords and degrees/s
 // for rotational
 typedef struct {
@@ -19,10 +22,13 @@ typedef struct {
 	double rot;
 	Speeds _curSpeed;
 	struct timespec _curTime;
+	int screenWidth;
+	int screenHeight;
+	double FOV;
 } Player;
 
 // Initialized the player with relevant data
-void InitPlayer(Player* Player);
+Player InitPlayer(double FOV, int screenWidth, int screenHeight);
 
 // Iterates the player to move it with its current speeds
 // Must be called every tick

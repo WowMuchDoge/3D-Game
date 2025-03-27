@@ -11,6 +11,7 @@ add_subdirectory(vendored/SDL EXCLUDE_FROM_ALL)
 
 add_executable(out 
 		src/c/main.c
-		src/c/player.c)
+		src/c/player.c
+		src/c/polygon.c)
 
 target_link_libraries(out PRIVATE SDL3::SDL3 m)

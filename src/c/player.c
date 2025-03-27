@@ -20,12 +20,19 @@ Speeds DecomposeSpeeds(Speeds initialSpeeds, double rot) {
 	return (Speeds){.vx = vx, .vy = vy, .omega = initialSpeeds.omega};
 }
 
-void InitPlayer(Player* player) {
-	player->x = 0;
-	player->y = 0;
-	player->rot = 0;
-	player->_curSpeed = (Speeds){0, 0, 0};
-	clock_gettime(CLOCK_REALTIME, &player->_curTime);
+Player InitPlayer(double FOV, int screenWidth, int screenHeight) {
+	Player player;
+
+	player.x = 0;
+	player.y = 0;
+	player.rot = 18;
+	player._curSpeed = (Speeds){0, 0, 0};
+	player.FOV = FOV;
+	clock_gettime(CLOCK_REALTIME, &player._curTime);
+	player.screenWidth = screenWidth;
+	player.screenHeight = screenHeight;
+
+	return player;
 }
 
 void IteratePlayer(Player* player) {
